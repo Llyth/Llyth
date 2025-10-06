@@ -1,0 +1,13 @@
+{{- if and .Values.serversJson.enabled (not .Values.serversJson.existingConfigMap) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "pgadmin4.fullname" . }}-servers
+  labels:
+    {{- include "pgadmin4.labels" . | nindent 4 }}
+data:
+  servers.json: |
+    {{- toJson .Values.serversJson.servers | nindent 4 }}
+{{- end }}
+
+

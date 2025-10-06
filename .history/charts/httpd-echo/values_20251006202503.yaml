@@ -1,0 +1,65 @@
+replicaCount: 2
+
+image:
+  repository: mendhak/http-https-echo
+  tag: "33"
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8080
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: echo.localtest.me
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []  # Exemple: - hosts: [echo.localtest.me] secretName: echo-tls
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+readinessProbe:
+  path: /
+  port: 8080
+  initialDelaySeconds: 2
+  periodSeconds: 5
+
+livenessProbe:
+  path: /
+  port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+startupProbe:
+  path: /
+  port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 30
+
+env:
+  - name: HTTP_PORT
+    value: "8080"
+  - name: ECHO_DELAY
+    value: "1s"
+
+nodeSelector: {}
+affinity: {}
+tolerations: []

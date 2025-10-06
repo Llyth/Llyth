@@ -1,0 +1,133 @@
+# Nombre de réplicas par défaut
+replicaCount: 1
+
+image:
+  # Image officielle de pgAdmin4
+  repository: dpage/pgadmin4
+  # Version de l'image (tag)
+  tag: "8.13"
+  # Politique de pull (IfNotPresent = évite de retélécharger si déjà présente)
+  pullPolicy: IfNotPresent
+
+service:
+  # Type du service Kubernetes (ClusterIP = accessible uniquement dans le cluster)
+  type: ClusterIP
+  # Port exposé par le Service
+  port: 80
+
+ingress:
+  # Active/désactive l’Ingress pour exposer pgAdmin
+  enabled: true
+  # Classe du contrôleur d’ingress (nginx dans ton cas)
+  className: nginx
+  # Hôte et chemins exposés
+  hosts:
+    - host: pgadmin.localtest.me
+      paths:
+        - path: /
+          pathType: Prefix
+  # TLS optionnel (à configurer pour HTTPS)
+  tls: []
+
+credentials:
+  # Identifiants initiaux pour pgAdmin (à sécuriser via Secret en prod)
+  username: "admin@example.com"
+  password: "admin1234"
+
+serversJson:
+  # Active la configuration d’un serveur PostgreSQL auto-enregistré
+  enabled: true
+  servers:
+    Servers:
+      "1":
+        Name: "Local Postgres"         # Nom affiché dans l’UI pgAdmin
+        Group: "Servers"               # Groupe logique
+        Host: "postgresql.postgres.svc.cluster.local"  # Adresse du service PostgreSQL
+        Port: 5432
+        MaintenanceDB: "coder"         # Base par défaut
+        Username: "coder"
+        SSLMode: "prefer"
+
+persistence:
+  # Active la persistance des données (sessions, configs pgAdmin)
+  enabled: true
+  # Taille du PVC
+  size: 2Gi
+  # Classe de stockage (vide = prend celle par défaut)
+  storageClass: ""
+
+resources:
+  # Ressources minimales garanties
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  # Ressources maximales allouées
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+readinessProbe:
+  # Vérifie si pgAdmin est prêt à recevoir du trafic
+  enabled: true
+  httpGet:
+    path: /misc/ping
+    port: 80
+  initialDelaySeconds: 60
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+livenessProbe:
+  # Vérifie si pgAdmin est vivant (sinon restart)
+  enabled: true
+  httpGet:
+    path: /login
+    port: 80
+  initialDelaySeconds: 120
+  periodSeconds: 30
+  timeoutSeconds: 80
+  failureThreshold: 80
+
+startupProbe:
+  # Vérifie que pgAdmin démarre correctement (utile car startup lent)
+  enabled: true
+  httpGet:
+    path: /login
+    port: 80
+  initialDelaySeconds: 300 
+  failureThreshold: 30
+  periodSeconds: 10
+
+podSecurityContext:
+  # Contexte de sécurité au niveau Pod (groupes et permissions FS)
+  enabled: true
+  fsGroup: 5050
+  fsGroupChangePolicy: "OnRootMismatch"
+
+securityContext:
+  # Contexte de sécurité du conteneur
+  enabled: true
+  runAsUser: 5050
+  runAsGroup: 5050
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  # Attention : doit rester "false" car pgAdmin a besoin d’écrire
+  readOnlyRootFilesystem: false  
+
+pdb:
+  # PodDisruptionBudget : assure la dispo lors de drain de node/MAJ
+  enabled: true
+  minAvailable: 1
+
+autoscaling:
+  # Active le Horizontal Pod Autoscaler (HPA)
+  enabled: true
+  # Nombre minimal de pods
+  minReplicas: 1
+  # Nombre maximal de pods
+  maxReplicas: 5
+  # Déclenche scaling si CPU > 70% en moyenne
+  targetCPUUtilizationPercentage: 70
+  # Déclenche scaling si mémoire > 80% en moyenne
+  targetMemoryUtilizationPercentage: 80
+

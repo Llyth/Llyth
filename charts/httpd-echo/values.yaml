@@ -1,0 +1,93 @@
+# Nombre de réplicas du déploiement (scalabilité horizontale)
+replicaCount: 2
+
+image:
+  # Image utilisée pour le conteneur http-echo
+  repository: mendhak/http-https-echo
+  # Version/tag de l’image (important pour la reproductibilité)
+  tag: "33"
+  # Politique de récupération de l’image (IfNotPresent = évite de re-télécharger inutilement)
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  # Création automatique d’un ServiceAccount dédié (bonnes pratiques sécurité)
+  create: true
+  # Annotations optionnelles (IAM, OIDC, etc.)
+  annotations: {}
+  # Nom du SA (si vide → généré automatiquement par Helm)
+  name: ""
+
+service:
+  # Type du service (ClusterIP = accessible uniquement dans le cluster)
+  type: ClusterIP
+  # Port exposé par le service
+  port: 80
+  # Port réel du conteneur
+  targetPort: 8080
+
+ingress:
+  # Active/désactive l’Ingress (pour exposer en dehors du cluster)
+  enabled: true
+  # Nom de la classe d’ingress (ici contrôleur nginx)
+  className: nginx
+  # Annotations (config spécifique au contrôleur d’ingress)
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  # Liste des hôtes et chemins exposés
+  hosts:
+    - host: echo.localtest.me
+      paths:
+        - path: /
+          pathType: Prefix
+  # TLS optionnel pour exposer en HTTPS
+  tls: []
+  # Exemple :
+  # tls:
+  #   - hosts:
+  #       - echo.localtest.me
+  #     secretName: echo-tls
+
+resources:
+  # Requests = ressources minimales garanties
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  # Limits = maximum consommable
+  limits:
+    cpu: 200m
+    memory: 256Mi
+
+# Probes = vérifications automatiques de l’état de santé du conteneur
+readinessProbe:
+  # Vérifie si le pod est prêt à recevoir du trafic
+  path: /
+  port: 8080
+  initialDelaySeconds: 2
+  periodSeconds: 5
+
+livenessProbe:
+  # Vérifie que le pod est vivant (sinon restart)
+  path: /
+  port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+startupProbe:
+  # Vérifie que le pod démarre correctement
+  path: /
+  port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  failureThreshold: 30
+
+# Variables d’environnement du conteneur
+env:
+  - name: HTTP_PORT
+    value: "8080"
+  - name: ECHO_DELAY
+    value: "1s"
+
+# Contraintes de scheduling
+nodeSelector: {}   # Ex: { "disktype": "ssd" }
+affinity: {}       # Ex: règles avancées de placement
+tolerations: []    # Ex: tolérance aux nœuds taintés

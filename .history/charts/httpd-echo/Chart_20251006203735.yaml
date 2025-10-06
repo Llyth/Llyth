@@ -1,0 +1,10 @@
+apiVersion: v2
+name: http-echo
+description: A generic Helm chart to deploy the http-echo application
+type: application
+
+# Version du chart (à incrémenter si tu modifies la logique des templates)
+version: 0.1.0
+
+# Version de l’application (ici correspond au tag de l’image utilisée)
+appVersion: "33"

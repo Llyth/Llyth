@@ -1,0 +1,13 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: cluster   # Nom du cluster Kind
+nodes:
+- role: control-plane
+  # Mapping de ports entre ton host et le node Kind
+  extraPortMappings:
+    - containerPort: 80     # Port dans le conteneur Kind (nginx ingress)
+      hostPort: 80          # Port sur ton host → accessible via http://localhost
+      protocol: TCP
+    - containerPort: 443    # Port dans le conteneur Kind (https ingress)
+      hostPort: 443         # Port sur ton host → accessible via https://localhost
+      protocol: TCP

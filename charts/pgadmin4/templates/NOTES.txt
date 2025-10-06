@@ -1,0 +1,23 @@
+pgAdmin4 has been deployed.
+
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+URL:
+{{- if and .Values.ingress.enabled (gt (len .Values.ingress.hosts) 0) }}
+  http{{ if .Values.ingress.tls }}s{{ end }}://{{ (index .Values.ingress.hosts 0).host }}/
+{{- else }}
+  Access via Service {{ include "pgadmin4.fullname" . }} on port {{ .Values.service.port }}
+{{- end }}
+
+Credentials:
+  Username key: {{ .Values.credentials.usernameKey }}
+  Password key: {{ .Values.credentials.passwordKey }}
+  Secret: {{- if .Values.credentials.createSecret }} {{ default (printf "%s-secret" (include "pgadmin4.fullname" .)) .Values.credentials.secretName }} {{- else }} {{ .Values.credentials.existingSecret }} {{- end }}
+
+Persistence:
+  {{- if .Values.persistence.enabled }}
+  Using {{ if .Values.persistence.existingClaim }}existing PVC '{{ .Values.persistence.existingClaim }}'{{ else }}PVC '{{ include "pgadmin4.fullname" . }}'{{ end }}
+  {{- else }}
+  Using EmptyDir (ephemeral)
+  {{- end }}
