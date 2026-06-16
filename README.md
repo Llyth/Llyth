@@ -79,7 +79,7 @@ Here are some ideas to get you started:
 ![](https://github-readme-stats.vercel.app/api/top-langs/?username=Llyth&theme=codeSTACKr&hide_border=false&include_all_commits=false&count_private=false&layout=compact)
 
 ### 🔝 Top Contributed Repo
-![](https://github-contributor-stats.vercel.app/api?username=Llyth&limit=5&theme=codeSTACKr&combine_all_yearly_contributions=true)
+![](https://github-contribution-card.vercel.app/api?username=Llyth&limit=5&theme=codeSTACKr&combine_all_yearly_contributions=true)
 
 ---
 [![](https://visitcount.itsvg.in/api?id=Llyth&icon=5&color=4)](https://visitcount.itsvg.in)
